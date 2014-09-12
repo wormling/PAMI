@@ -68,45 +68,44 @@ class ListenerTest implements IEventListener
 
     public function handle(EventMessage $event)
     {
-        if ($event instanceof \PAMI\Message\Event\AsyncAGIEvent ||
-            $event instanceof \PAMI\Message\Event\AsyncAGIExecEvent) { // Asterisk v12
-            if ($event->getSubEvent() == 'Start') {
-                switch($pid = pcntl_fork())
-                {
-                    case 0:
-                        $logger = \Logger::getLogger(__CLASS__);
-                        $this->_client = new ClientImpl($this->_pamiOptions);
-                        $this->_client->open();
-                        $agi = new \PAMI\AsyncAgi\AsyncClientImpl(array(
-                            'pamiClient' => $this->_client,
-                            'asyncAgiEvent' => $event
-                        ));
-                        $app = new MyPAGIApplication(array(
-                            'pagiClient' => $agi
-                        ));
-                        $app->init();
-                        $app->run();
-                        //$agi->indicateProgress();
-                        //$agi->answer();
-                        //$agi->streamFile('welcome');
-                        //$agi->playCustomTones(array("425/50","0/50"));
-                        //sleep(5);
-                        //$agi->indicateCongestion(10);
-                        //$agi->hangup();
-                        $this->_client->close();
-                        echo "Application finished\n";
-                        exit(0);
-                        break;
-                    case -1:
-                        echo "Could not fork application\n";
-                        break;
-                    default:
-                        echo "Forked Application\n";
-                        break;
-                }
+        if (($event instanceof \PAMI\Message\Event\AsyncAGIEvent && $event->getSubEvent() == 'Start') ||
+            $event instanceof \PAMI\Message\Event\AsyncAGIStartEvent) { // Asterisk v12
+            switch($pid = pcntl_fork())
+            {
+                case 0:
+                    $logger = \Logger::getLogger(__CLASS__);
+                    $this->_client = new ClientImpl($this->_pamiOptions);
+                    $this->_client->open();
+                    $agi = new \PAMI\AsyncAgi\AsyncClientImpl(array(
+                        'pamiClient' => $this->_client,
+                        'asyncAgiEvent' => $event
+                    ));
+                    $app = new MyPAGIApplication(array(
+                        'pagiClient' => $agi
+                    ));
+                    $app->init();
+                    $app->run();
+                    //$agi->indicateProgress();
+                    //$agi->answer();
+                    //$agi->streamFile('welcome');
+                    //$agi->playCustomTones(array("425/50","0/50"));
+                    //sleep(5);
+                    //$agi->indicateCongestion(10);
+                    //$agi->hangup();
+                    $this->_client->close();
+                    echo "Application finished\n";
+                    exit(0);
+                    break;
+                case -1:
+                    echo "Could not fork application\n";
+                    break;
+                default:
+                    echo "Forked Application\n";
+                    break;
             }
         }
     }
+    
     public function run()
     {
         $this->_client->open();
