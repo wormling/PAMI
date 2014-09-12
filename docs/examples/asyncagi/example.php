@@ -68,7 +68,8 @@ class ListenerTest implements IEventListener
 
     public function handle(EventMessage $event)
     {
-        if ($event instanceof \PAMI\Message\Event\AsyncAGIEvent) {
+        if ($event instanceof \PAMI\Message\Event\AsyncAGIEvent ||
+            $event instanceof \PAMI\Message\Event\AsyncAGIExecEvent) { // Asterisk v12
             if ($event->getSubEvent() == 'Start') {
                 switch($pid = pcntl_fork())
                 {

@@ -94,7 +94,8 @@ class AsyncClientImpl extends PagiClient implements IEventListener
      */
     public function handle(EventMessage $event)
     {
-        if ($event instanceof \PAMI\Message\Event\AsyncAGIEvent) {
+        if ($event instanceof \PAMI\Message\Event\AsyncAGIEvent ||
+            $event instanceof \PAMI\Message\Event\AsyncAGIExecEvent) { // Asterisk v12
             if ($event->getCommandId() == $this->_lastCommandId) {
                 $this->_lastAgiResult = trim($event->getResult());
             }
